@@ -36,6 +36,7 @@ contract Rentable is ERC721Enumerable, IRentable {
         uint256 _fee, 
         uint256 _duration
     ) external {
+        require(_tokenAddr != address(this), "ERCRentable20: cannot rent rentable token");
         require(_tokenAddr != address(0), "ERCRentable20: token address should not be the zero address");
         require(_fee > 0, "Rentable: fee cannot be zero");
         require(_deposit > 0, "rentable: deposit cannot be zero");
