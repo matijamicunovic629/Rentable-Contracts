@@ -63,9 +63,11 @@ contract Rentable is ERC721Enumerable, IRentable {
     // @param _unitId - token ID of the order
     //
     function cancelUnit(uint256 _unitId) external {
+        require(_exists(_unitId), "Rentable: Unit does not exist");
         require(!unitData[_unitId].rented, "Rentable: Cannot cancel ongoing rental");
         require(ownerOf(_unitId) == msg.sender, "Rentable: You do not own this NFT");
 
+        unitData[_unitId].complete = true;
         IERC721(unitData[_unitId].tokenAddr).transferFrom(address(this), msg.sender, unitData[_unitId].tokenId);
         _burn(_unitId);
 
