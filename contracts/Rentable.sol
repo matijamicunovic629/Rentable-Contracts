@@ -167,7 +167,7 @@ contract Rentable is ERC721Enumerable, IRentable {
     // @param _to - unitID to end at
     //
     function getRentalUnitList(uint256 _from, uint256 _to) view external returns(RentalUnit[] memory) {
-        require(_from > 0 && _from < _to, "Invalid");
+        require(_from >= 0 && _from < _to, "Invalid");
         require(_to < nextId, "Invalid");
         uint256 range = _to.sub(_from);
         require(range <= 100, "Invalid");
