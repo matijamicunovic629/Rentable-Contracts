@@ -21,6 +21,14 @@ contract Rentable is ERC721Enumerable, IRentable {
         NETWORK_FEE = _feeValue;
     }
 
+    //
+    // @dev Creates an order for a rental. Order is represented in ERC721
+    // @param _tokenAddr - address of the NFT smart contract for rent
+    // @param _tokenId - tokenID of the NFT to rent
+    // @param _deposit - the collateral/deposit needed to cover NFT
+    // @param _fee - the rental fee to be given to NFT owner
+    // @param _duration - the suggested timeframe for rental
+    //
     function createRentalUnit(
         address _tokenAddr, 
         uint256 _tokenId, 
@@ -48,6 +56,11 @@ contract Rentable is ERC721Enumerable, IRentable {
         nextId = nextId.add(1);
     }
 
+    //
+    // @dev - renter calls this function to rent an NFT
+    // @dev - renter must deposit payment + collateral
+    // @param _unitId - token ID of the order
+    //
     function rentNFT(uint256 _unitId) external {
         require(_exists(_unitId), "token does not exist");
         require(msg.sender != ownerOf(_unitId), "Cannot borrow to yourself");
@@ -67,6 +80,11 @@ contract Rentable is ERC721Enumerable, IRentable {
         emit RentNFT(msg.sender, _unitId);
     }
 
+    //
+    // @dev - renter calls this function to return an NFT
+    // @dev - asset returns to owner, fee goes to owner, renter receives deposit
+    // @param _unitId - token ID of the order
+    //
     function returnNFT(uint256 _unitId) external {
         require(_exists(_unitId), "token does not exist");
 
@@ -83,6 +101,12 @@ contract Rentable is ERC721Enumerable, IRentable {
         emit ReturnNFT(msg.sender, _unitId);
     }
 
+    //
+    // @dev - Liquidator may call this function
+    // @dev - renters deposit is given to original asset owner
+    // @dev - can only be called if loan time expires
+    // @param _unitId - token ID of the order
+    //
     function liquidateNFT(uint256 _unitId) external {
         require(_exists(_unitId), "token does not exist");
         require(unitData[_unitId].rented && !unitData[_unitId].complete, "Token not rented or order complete");
@@ -101,6 +125,12 @@ contract Rentable is ERC721Enumerable, IRentable {
         emit LiquidateNFT(msg.sender, holder, _unitId);
     }
 
+    //
+    // @dev - Liquidator may call this function
+    // @dev - renters deposit is given to original asset owner
+    // @dev - can only be called if loan time expires
+    // @param _unitId - token ID of the order
+    //
     function liquidateNFTLoop() external {
         for (uint _unitId = 0; _unitId < nextId; _unitId++){
             if(!_exists(_unitId)) {
@@ -123,7 +153,31 @@ contract Rentable is ERC721Enumerable, IRentable {
 
     // GET functions
 
+    //
+    // @dev - retrieves RentalUnit struct of given unitId
+    // @param _unitId - token ID of the order
+    //
     function getRentalUnit(uint256 unitId) view external returns(RentalUnit memory _unit) {
         _unit = unitData[unitId];
+    }
+
+    //
+    // @dev - retrieves list of RentalUnit structs of given range of unitId
+    // @param _from - unitID to begin at
+    // @param _to - unitID to end at
+    //
+    function getRentalUnitList(uint256 _from, uint256 _to) view external returns(RentalUnit[] memory) {
+        require(_from > 0 && _from < _to, "Invalid");
+        require(_to < nextId, "Invalid");
+        uint256 range = _to.sub(_from);
+        require(range <= 100, "Invalid");
+
+        RentalUnit[] memory items = new RentalUnit[](range);
+        uint256 k = 0;
+        for (uint256 i = _from; i <= _to; i++) {
+            items[k] = unitData[i];
+            k++;
+        }
+        return items;
     }
 }
