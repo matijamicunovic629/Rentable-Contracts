@@ -23,6 +23,7 @@ interface IRentable  {
         uint256 duration,
         uint256 unitId
     );
+    event UnitCancel(address indexed sender, uint256 rentalId);
     event RentNFT(address indexed sender, uint256 rentalId);
     event ReturnNFT(address indexed sender, uint256 rentalId);
     event LiquidateNFT(address indexed sender, address holder, uint256 rentalId);
@@ -34,6 +35,7 @@ interface IRentable  {
         uint256 _duration
     ) external;
     function rentNFT(uint256 _unitId) external;
+    function cancelUnit(uint256 _unitId) external;
     function returnNFT(uint256 _unitId) external;
     function liquidateNFT(uint256 _unitId) external;
     function getRentalUnit(uint256 unitId) view external returns(RentalUnit memory _unit);
