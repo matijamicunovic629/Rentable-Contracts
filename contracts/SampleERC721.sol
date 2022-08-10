@@ -39,7 +39,7 @@ contract SampleERC721 is
         _;
     }
 
-    constructor() ERC721("VamprAsset", "VAST") {
+    constructor() ERC721("RentableAsset", "RAST") {
         // Roles
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(DEFAULT_ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
