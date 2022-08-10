@@ -36,4 +36,5 @@ interface IRentable  {
     function returnNFT(uint256 _unitId) external;
     function liquidateNFT(uint256 _unitId) external;
     function getRentalUnit(uint256 unitId) view external returns(RentalUnit memory _unit);
+    function getRentalUnitList(uint256 _from, uint256 _to) view external returns(RentalUnit[] memory);
 }
