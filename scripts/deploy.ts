@@ -1,18 +1,22 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  // const currentTimestampInSeconds = Math.round(Date.now() / 1000);
+  // const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
+  // const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
 
-  const lockedAmount = ethers.utils.parseEther("1");
+  // const lockedAmount = ethers.utils.parseEther("1");
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  const ERC20 = await ethers.getContractFactory("TestERC20");
+  const _token = await ERC20.deploy("USDC", "USDC");
+  const token = await _token.deployed();
 
-  await lock.deployed();
+  const rentable = await ethers.getContractFactory("Rentable");
+  const Rentable = await rentable.deploy(token.address, "5");
 
-  console.log("Lock with 1 ETH deployed to:", lock.address);
+  // await lock.deployed();
+
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
