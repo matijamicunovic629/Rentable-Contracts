@@ -23,6 +23,7 @@ interface IRentable  {
         uint256 duration,
         uint256 unitId
     );
+    event UnitCancel(address user, uint256 rentalUnit);
     event RentNFT(address indexed sender, uint256 rentalId);
     event ReturnNFT(address indexed sender, uint256 rentalId);
     event LiquidateNFT(address indexed sender, address holder, uint256 rentalId);
