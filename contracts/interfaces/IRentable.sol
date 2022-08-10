@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 interface IRentable  {
     struct RentalUnit {
         address tokenAddr;
+        uint256 unitId;
         uint256 tokenId;
         uint256 deposit;
         uint256 fee;
