@@ -115,6 +115,27 @@ contract Rentable is ERC721Enumerable {
         //emit event
 
     }
+
+    function liquidateNFTLoop() external {
+        for (uint _unitId = 0; _unitId < nextId; _unitId++){
+            if(!_exists(_unitId)) {
+                continue;
+            }
+
+            if(!unitData[_unitId].complete && unitData[_unitId].rented && unitData[_unitId].expiry < block.timestamp) {
+                address holder = ownerOf(_unitId);
+                uint256 liquidatorTip = unitData[_unitId].fee.div(2);
+                uint256 toSend = unitData[_unitId].deposit.add(unitData[_unitId].fee).sub(liquidatorTip);
+                _burn(_unitId);
+                
+                IERC20(USDC).transfer(holder, toSend);
+                IERC20(USDC).transfer(msg.sender, liquidatorTip);
+
+                //emit event
+            }
+        }
+    }
+
     // GET functions
 
     function getRentalUnit(uint256 unitId) view external returns(RentalUnit memory _unit) {
