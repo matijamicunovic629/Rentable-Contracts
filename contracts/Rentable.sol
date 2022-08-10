@@ -50,6 +50,7 @@ contract Rentable is ERC721Enumerable, IRentable {
         unitData[nextId].deposit = _deposit;
         unitData[nextId].fee = _fee;
         unitData[nextId].duration = _duration;
+        unitData[nextId].unitId = nextId;
 
         _mint(msg.sender, nextId);
 
@@ -155,6 +156,13 @@ contract Rentable is ERC721Enumerable, IRentable {
     // GET functions
 
     //
+    //@dev - returns the highest/latest rent tokenID
+    //
+    function getLatestId() view external returns(uint256) {
+        return nextId.sub(1);
+    }
+
+    //
     // @dev - retrieves RentalUnit struct of given unitId
     // @param _unitId - token ID of the order
     //
@@ -171,13 +179,22 @@ contract Rentable is ERC721Enumerable, IRentable {
         require(_from > 0 && _from < _to, "Invalid");
         require(_to < nextId, "Invalid");
         uint256 range = _to.sub(_from);
-        require(range <= 100, "Invalid");
-
-        RentalUnit[] memory items = new RentalUnit[](range);
+        require(range <= 1000, "Invalid");
+        
+        uint256 numValid;
+        for (uint256 i = _from; i <= _to; i++) {
+            if(!unitData[i].complete) {
+                numValid = numValid.add(1);
+            }
+        }
+        
+        RentalUnit[] memory items = new RentalUnit[](numValid);
         uint256 k = 0;
         for (uint256 i = _from; i <= _to; i++) {
-            items[k] = unitData[i];
-            k++;
+            if(!unitData[i].complete) {
+                items[k] = unitData[i];
+                k++;
+            }
         }
         return items;
     }
