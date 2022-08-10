@@ -61,14 +61,57 @@ contract Rentable is ERC721Enumerable {
     }
 
     function rentNFT(uint256 _unitId) external {
+        require(_exists(_unitId), "token does not exist");
+        require(msg.sender != ownerOf(_unitId), "Cannot borrow to yourself");
+
+        uint256 extraCost = unitData[_unitId].fee.mul(NETWORK_FEE).div(1000);
+        uint256 totalAmount = unitData[_unitId].fee.add(unitData[_unitId].deposit).add(extraCost);
+
+        require(IERC20(USDC).balanceOf(msg.sender) >= totalAmount, "Insufficient funds");
+
+        unitData[_unitId].expiry = unitData[_unitId].duration.add(block.timestamp);
+        unitData[_unitId].renter = msg.sender;
+        unitData[_unitId].rented = true;
+
+        IERC20(USDC).transferFrom(msg.sender, address(this), totalAmount);
+        IERC721(unitData[_unitId].tokenAddr).transferFrom(address(this), msg.sender, unitData[_unitId].tokenId);
+
+        //emit event
 
     }
 
     function returnNFT(uint256 _unitId) external {
+        require(_exists(_unitId), "token does not exist");
 
+        address holder = ownerOf(_unitId);
+        require(IERC721(unitData[_unitId].tokenAddr).ownerOf(unitData[_unitId].tokenId) == msg.sender, "You do not own the NFT");
+        
+        unitData[_unitId].complete = true;
+
+        _burn(_unitId);
+
+        IERC20(USDC).transfer(msg.sender, unitData[_unitId].deposit);
+        IERC20(USDC).transfer(holder, unitData[_unitId].fee);
+        IERC721(unitData[_unitId].tokenAddr).transferFrom(msg.sender, holder, unitData[_unitId].tokenId);
+
+        // emit event;
     }
 
     function liquidateNFT(uint256 _unitId) external {
+        require(_exists(_unitId), "token does not exist");
+        require(unitData[_unitId].rented && !unitData[_unitId].complete, "Token not rented or order complete");
+        require(unitData[_unitId].expiry < block.timestamp, "Not ready to liquidate");
+
+        address holder = ownerOf(_unitId);
+        unitData[_unitId].complete = true;
+        uint256 liquidatorTip = unitData[_unitId].fee.div(2);
+        uint256 toSend = unitData[_unitId].deposit.add(unitData[_unitId].fee).sub(liquidatorTip);
+        _burn(_unitId);
+        
+        IERC20(USDC).transfer(holder, toSend);
+        IERC20(USDC).transfer(msg.sender, liquidatorTip);
+
+        //emit event
 
     }
     // GET functions
